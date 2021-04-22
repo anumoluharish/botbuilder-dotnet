@@ -23,7 +23,7 @@ For more information jump to a section below.
  |----|---------------|--------------|-----------------|--|--|
  |Main | 4.14.* Preview Builds |[![Build Status](https://fuselabs.visualstudio.com/SDK_v4/_apis/build/status/DotNet/BotBuilder-DotNet-Signed-daily?branchName=main)](https://fuselabs.visualstudio.com/SDK_v4/_build/latest?definitionId=277&branchName=main) |[![Coverage Status](https://coveralls.io/repos/github/Microsoft/botbuilder-dotnet/badge.svg?branch=main&service=github)](https://coveralls.io/github/Microsoft/botbuilder-dotnet?branch=main) | [![Tests Status](https://fuselabs.visualstudio.com/SDK_v4/_apis/build/status/DotNet/FunctionalTests/BotBuilder-DotNet-Functional-Tests-Windows-yaml?branchName=main)](https://fuselabs.visualstudio.com/SDK_v4/_build/latest?definitionId=834&branchName=main) |  [![Tests Status](https://fuselabs.visualstudio.com/SDK_v4/_apis/build/status/DotNet/FunctionalTests/BotBuilder-DotNet-Functional-Tests-Linux-yaml?branchName=main)](https://fuselabs.visualstudio.com/SDK_v4/_build/latest?definitionId=779&branchName=main)
 
-## Packages
+## Packages.
 
 | Name                                  | Released Package | Daily Build
 |---------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------|--|
