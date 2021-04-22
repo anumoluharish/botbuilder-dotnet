@@ -1,14 +1,14 @@
-name: $(date:yyyyMMdd)$(rev:.r)
-resources:
-  repositories:
-  - repository: self
-    type: git
-    ref: main
+name: Build
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    types: [opened, synchronize, reopened]
 jobs:
-- job: Job_1
-  displayName: Agent job 1
-  pool:
-    vmImage: windows-2019
+  build:
+  name: Build
+    runs-on: windows-latest
   steps:
   - checkout: self
   - task: DotNetCoreCLI@2
@@ -25,10 +25,7 @@ jobs:
       projectName: 'botbuilder-dotnet '
       extraProperties: >-
         #sonar.cs.vscoveragexml.reportsPaths=**/*.coveragexml
-
-
         sonar.exclusions=**/*test*
-
         sonar.exclusions=**/bin/**
   - task: DotNetCoreCLI@2
     displayName: Build
