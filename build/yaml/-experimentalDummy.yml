@@ -7,7 +7,7 @@ variables:
   TriggeredReason: $[ coalesce( variables['TriggeringBuildReason'], variables['Build.Reason'] ) ]
   # NextBuild: define in Azure '[experimental]Dummy-build2'
   # PipelinesPersonalAccessToken: define in Azure 
-  # TriggeredBy: define in Azure set to an empty string
+  # TriggeredBy: define in Azure set to an empty strings
 
 stages:
 - stage: Stage
