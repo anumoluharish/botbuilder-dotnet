@@ -1,0 +1,71 @@
+name: $(date:yyyyMMdd)$(rev:.r)
+resources:
+  repositories:
+  - repository: self
+    type: git
+    ref: main
+jobs:
+- job: Job_1
+  displayName: Agent job 1
+  pool:
+    vmImage: windows-2019
+  steps:
+  - checkout: self
+  - task: DotNetCoreCLI@2
+    displayName: Restore
+    inputs:
+      command: restore
+      projects: Microsoft.Bot.Builder.sln
+  - task: SonarCloudPrepare@1
+    displayName: Prepare analysis on SonarCloud
+    inputs:
+      SonarCloud: 6e1f7dc6-53e1-4a8a-a167-7cce8afc1e08
+      organization: anumoluharish
+      projectKey: anumoluharish_botbuilder-dotnet
+      projectName: 'botbuilder-dotnet '
+      extraProperties: >-
+        #sonar.cs.vscoveragexml.reportsPaths=**/*.coveragexml
+
+
+        sonar.exclusions=**/*test*
+
+        sonar.exclusions=**/bin/**
+  - task: DotNetCoreCLI@2
+    displayName: Build
+    inputs:
+      projects: Microsoft.Bot.Builder.sln
+      arguments: --configuration $(BuildConfiguration)
+  - task: DotNetCoreCLI@2
+    displayName: Test
+    inputs:
+      command: test
+      projects: Tests/**/*Tests.csproj
+      arguments: -v n  --configuration $(BuildConfiguration) --no-build --no-restore --filter "TestCategory!=IgnoreInAutomatedBuild&TestCategory!=FunctionalTests&TestCategory!=WindowsOnly" --collect:"Code Coverage" --settings $(Build.SourcesDirectory)\CodeCoverage.runsettings
+  - task: CopyFiles@2
+    displayName: 'Copy Files to: $(Common.TestResultsDirectory)'
+    enabled: False
+    inputs:
+      SourceFolder: $(agent.builddirectory)\_work\_temp
+      TargetFolder: $(Common.TestResultsDirectory)
+  - task: VSTest@2
+    displayName: VsTest - testRun
+    enabled: False
+    inputs:
+      testSelector: testRun
+      codeCoverageEnabled: true
+  - task: PowerShell@2
+    displayName: PowerShell Script
+    enabled: False
+    inputs:
+      targetType: inline
+      script: "$ver = (Get-ChildItem $env:USERPROFILE\\.nuget\\packages\\Microsoft.CodeCoverage | Select-Object -Property Name | Sort-Object -Descending | Select-Object -First 1).Name\n \nGet-ChildItem -Recurse -Filter \"*.coverage\" | % {\n$outfile = \"$([System.IO.Path]::GetFileNameWithoutExtension($_.FullName)).coveragexml\"\n$output = [System.IO.Path]::Combine([System.IO.Path]::GetDirectoryName($_.FullName), $outfile)\n\"Analyse '$($_.FullName)' with output '$output'...\"\n. $env:USERPROFILE\\.nuget\\packages\\microsoft.codecoverage\\$ver\\build\\netstandard1.0\\CodeCoverage\\CodeCoverage.exe analyze /output:$output $_.FullName\n}\n\"Done\""
+  - task: PublishBuildArtifacts@1
+    displayName: 'Publish Artifact: drop'
+  - task: SonarCloudAnalyze@1
+    displayName: Run Code Analysis
+  - task: SonarCloudPublish@1
+    displayName: Publish Quality Gate Result
+  - task: VSTest@2
+    displayName: VsTest - testAssemblies
+    enabled: False
+...
