@@ -1,99 +1,48 @@
 name: Build
-'on':
+on:
   push:
     branches:
       - master
   pull_request:
-    types:
-      - opened
-      - synchronize
-      - reopened
+    types: [opened, synchronize, reopened]
 jobs:
   build:
     name: Build
     runs-on: windows-latest
-  steps:
-    - checkout: self
-    - task: DotNetCoreCLI@2
-      displayName: Restore
-      inputs:
-        command: restore
-        projects: Microsoft.Bot.Builder.sln
-    - task: SonarCloudPrepare@1
-      displayName: Prepare analysis on SonarCloud
-      inputs:
-        SonarCloud: 6e1f7dc6-53e1-4a8a-a167-7cce8afc1e08
-        organization: anumoluharish
-        projectKey: anumoluharish_botbuilder-dotnet
-        projectName: 'botbuilder-dotnet '
-        extraProperties: |-
-          #sonar.cs.vscoveragexml.reportsPaths=**/*.coveragexml
-
-          sonar.exclusions=**/*test*
-          sonar.exclusions=**/bin/**
-    - task: DotNetCoreCLI@2
-      displayName: Build
-      inputs:
-        projects: Microsoft.Bot.Builder.sln
-        arguments: '--configuration $(BuildConfiguration)'
-    - task: DotNetCoreCLI@2
-      displayName: Test
-      inputs:
-        command: test
-        projects: Tests/**/*Tests.csproj
-        arguments: >-
-          -v n  --configuration $(BuildConfiguration) --no-build --no-restore
-          --filter
-          "TestCategory!=IgnoreInAutomatedBuild&TestCategory!=FunctionalTests&TestCategory!=WindowsOnly"
-          --collect:"Code Coverage" --settings
-          $(Build.SourcesDirectory)\CodeCoverage.runsettings
-    - task: CopyFiles@2
-      displayName: 'Copy Files to: $(Common.TestResultsDirectory)'
-      enabled: false
-      inputs:
-        SourceFolder: $(agent.builddirectory)\_work\_temp
-        TargetFolder: $(Common.TestResultsDirectory)
-    - task: VSTest@2
-      displayName: VsTest - testRun
-      enabled: false
-      inputs:
-        testSelector: testRun
-        codeCoverageEnabled: true
-    - task: PowerShell@2
-      displayName: PowerShell Script
-      enabled: false
-      inputs:
-        targetType: inline
-        script: >-
-          $ver = (Get-ChildItem
-          $env:USERPROFILE\.nuget\packages\Microsoft.CodeCoverage |
-          Select-Object -Property Name | Sort-Object -Descending | Select-Object
-          -First 1).Name
-           
-          Get-ChildItem -Recurse -Filter "*.coverage" | % {
-
-          $outfile =
-          "$([System.IO.Path]::GetFileNameWithoutExtension($_.FullName)).coveragexml"
-
-          $output =
-          [System.IO.Path]::Combine([System.IO.Path]::GetDirectoryName($_.FullName),
-          $outfile)
-
-          "Analyse '$($_.FullName)' with output '$output'..."
-
-          .
-          $env:USERPROFILE\.nuget\packages\microsoft.codecoverage\$ver\build\netstandard1.0\CodeCoverage\CodeCoverage.exe
-          analyze /output:$output $_.FullName
-
-          }
-
-          "Done"
-    - task: PublishBuildArtifacts@1
-      displayName: 'Publish Artifact: drop'
-    - task: SonarCloudAnalyze@1
-      displayName: Run Code Analysis
-    - task: SonarCloudPublish@1
-      displayName: Publish Quality Gate Result
-    - task: VSTest@2
-      displayName: VsTest - testAssemblies
-      enabled: false
+    steps:
+      - name: Set up JDK 11
+        uses: actions/setup-java@v1
+        with:
+          java-version: 1.11
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
+      - name: Cache SonarCloud packages
+        uses: actions/cache@v1
+        with:
+          path: ~\sonar\cache
+          key: ${{ runner.os }}-sonar
+          restore-keys: ${{ runner.os }}-sonar
+      - name: Cache SonarCloud scanner
+        id: cache-sonar-scanner
+        uses: actions/cache@v1
+        with:
+          path: .\.sonar\scanner
+          key: ${{ runner.os }}-sonar-scanner
+          restore-keys: ${{ runner.os }}-sonar-scanner
+      - name: Install SonarCloud scanner
+        if: steps.cache-sonar-scanner.outputs.cache-hit != 'true'
+        shell: powershell
+        run: |
+          New-Item -Path .\.sonar\scanner -ItemType Directory
+          dotnet tool update dotnet-sonarscanner --tool-path .\.sonar\scanner
+      - name: Build and analyze
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        shell: powershell
+        run: |
+          .\.sonar\scanner\dotnet-sonarscanner begin /k:"anumoluharish_botbuilder-dotnet" /o:"anumoluharish" /d:sonar.login="${{ secrets.SONAR_TOKEN }}" /d:sonar.host.url="https://sonarcloud.io"
+          dotnet build
+          dotnet test Tests/**/*Tests.csproj --no-build --no-restore --filter "TestCategory!=IgnoreInAutomatedBuild&TestCategory!=FunctionalTests&TestCategory!=WindowsOnly" --collect:"Code Coverage" --settings $(Build.SourcesDirectory)\CodeCoverage.runsettings
+          .\.sonar\scanner\dotnet-sonarscanner end /d:sonar.login="${{ secrets.SONAR_TOKEN }}"
