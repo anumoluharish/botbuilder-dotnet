@@ -46,3 +46,14 @@ jobs:
           dotnet build
           dotnet test Microsoft.Bot.Builder.sln --no-build --no-restore --filter "TestCategory!=IgnoreInAutomatedBuild&TestCategory!=FunctionalTests&TestCategory!=WindowsOnly" --collect:"Code Coverage" --settings CodeCoverage.runsettings
           .\.sonar\scanner\dotnet-sonarscanner end /d:sonar.login="${{ secrets.SONAR_TOKEN }}"
+            - name: Clone Repository
+      - name: Download code coverage results
+        uses: actions/download-artifact@v1
+        with:
+          name: code-coverage-report
+          path: bin
+      - name: Analyze with SonarCloud
+        uses: sonarsource/sonarcloud-github-action@master
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
