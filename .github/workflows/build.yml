@@ -46,4 +46,4 @@ jobs:
           dotnet build
           dotnet test Tests/**/*Tests.csproj -no-build --no-restore --filter "TestCategory!=IgnoreInAutomatedBuild&TestCategory!=FunctionalTests&TestCategory!=WindowsOnly" --collect:"Code Coverage" --settings CodeCoverage.runsetting
           .\.sonar\scanner\dotnet-sonarscanner end /d:sonar.login="${{ secrets.SONAR_TOKEN }}"
-            - name: Clone Repository
+          
