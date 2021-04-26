@@ -10,20 +10,20 @@ on:
 jobs:
   build:
 
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
 
     steps:
     - uses: actions/checkout@v2
     - name: Setup .NET
       uses: actions/setup-dotnet@v1
       with:
-        dotnet-version: 4.9.x
+        dotnet-version: 5.0.X
     - name: Restore dependencies
-      run: dotnet restore kiota.sln
-    - name: Build
-      run: dotnet build kiota.sln --no-restore
+      run: dotnet restore Microsoft.Bot.Builder.sln
+    - name: Builx
+      run: dotnet build Microsoft.Bot.Builder.sln --no-restore
     - name: Test
-      run: dotnet test kiota.sln --no-build --verbosity normal --collect:"XPlat Code Coverage"
+      run: dotnet test Microsoft.Bot.Builder.sln --no-build --verbosity normal --collect:"XPlat Code Coverage"
     - name: Install report generator
       run: dotnet tool install --global dotnet-reportgenerator-globaltool
     - name: Generate coverage report
