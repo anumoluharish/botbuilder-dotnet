@@ -20,9 +20,15 @@ jobs:
       - name: Run unit tests
         run: dotnet test --no-build --configuration Release
       - name: Generate coverage report
+      - uses: actions/checkout@v1
+      - name: Setup .NET Core
+        uses: actions/setup-dotnet@v1
+        with:
+           dotnet-version: 3.0.100
+      - name: Generate coverage report
         run: |
           cd ./tests
-          dotnet test /p:CollectCoverage=true /p:CoverletOutput=TestResults/ /p:CoverletOutputFormat=lcov
+          dotnet test -v n  -f netcoreapp2.1 --configuration release --no-build --no-restore --filter "TestCategory!=IgnoreInAutomatedBuild&TestCategory!=FunctionalTests" --collect:"Code Coverage" --settings CodeCoverage.runsettings
       - name: Publish coverage report to coveralls.io
         uses: coverallsapp/github-action@v1.0.1
         with:
