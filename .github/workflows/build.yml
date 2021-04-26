@@ -44,6 +44,6 @@ jobs:
         run: |
           .\.sonar\scanner\dotnet-sonarscanner begin /k:"anumoluharish_botbuilder-dotnet" /o:"anumoluharish" /d:sonar.login="${{ secrets.SONAR_TOKEN }}" /d:sonar.host.url="https://sonarcloud.io" -d:sonar.cs.vstest.reportsPaths="**/TestResults/*.trx" sonar.exclusions=**/*test* sonar.exclusions=**/bin/**
           dotnet build
-          dotnet test Tests/**/*Tests.csproj  --logger trx --collect:"Code Coverage" /p:CollectCoverage=true
+          dotnet test --logger trx --collect:"Code Coverage" /p:CollectCoverage=true
           .\.sonar\scanner\dotnet-sonarscanner end /d:sonar.login="${{ secrets.SONAR_TOKEN }}"
           
