@@ -23,11 +23,11 @@ jobs:
     - name: Builx
       run: dotnet build Microsoft.Bot.Builder.sln --no-restore
     - name: Test
-      run: dotnet test Microsoft.Bot.Builder.sln --no-build --no-restore --filter "TestCategory!=IgnoreInAutomatedBuild&TestCategory!=FunctionalTests&TestCategory!=WindowsOnly" --collect:"Code Coverage" --settings CodeCoverage.runsettings
+      run: dotnet test Tests/**/*Tests.csproj --no-build --no-restore --filter "TestCategory!=IgnoreInAutomatedBuild&TestCategory!=FunctionalTests&TestCategory!=WindowsOnly" --collect:"Code Coverage" --settings CodeCoverage.runsettings
     - name: Install report generator
       run: dotnet tool install --global dotnet-reportgenerator-globaltool
     - name: Generate coverage report
-      run: reportgenerator -reports:**/coverage.cobertura.xml -targetdir:./reports/coverage
+      run: reportgenerator -reports:**/coveragexml -targetdir:./reports/coverage
     - uses: actions/upload-artifact@v2
       with:
         name: coverage
