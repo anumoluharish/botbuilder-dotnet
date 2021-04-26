@@ -28,7 +28,7 @@ jobs:
       - name: Generate coverage report
         run: |
           cd ./tests
-          dotnet test -v n  -f netcoreapp2.1 --configuration release --no-build --no-restore --filter "TestCategory!=IgnoreInAutomatedBuild&TestCategory!=FunctionalTests" --collect:"Code Coverage" --settings CodeCoverage.runsettings
+          dotnet test  netcoreapp2.1 --configuration release --no-build --no-restore --filter "TestCategory!=IgnoreInAutomatedBuild&TestCategory!=FunctionalTests" --collect:"Code Coverage" --settings CodeCoverage.runsettings
       - name: Publish coverage report to coveralls.io
         uses: coverallsapp/github-action@v1.0.1
         with:
