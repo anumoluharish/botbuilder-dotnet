@@ -23,7 +23,7 @@ jobs:
     - name: Builx
       run: dotnet build Microsoft.Bot.Builder.sln --no-restore
     - name: Test
-      run: dotnet test Microsoft.Bot.Builder.sln --no-build --verbosity normal --collect:"Code Coverage"
+      run: dotnet test Microsoft.Bot.Builder.sln --no-build --no-restore --filter "TestCategory!=IgnoreInAutomatedBuild&TestCategory!=FunctionalTests&TestCategory!=WindowsOnly" --collect:"Code Coverage" --settings CodeCoverage.runsettings
     - name: Install report generator
       run: dotnet tool install --global dotnet-reportgenerator-globaltool
     - name: Generate coverage report
