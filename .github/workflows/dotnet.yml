@@ -23,7 +23,7 @@ jobs:
     - name: Builx
       run: dotnet build Microsoft.Bot.Builder.sln --no-restore
     - name: Test
-      run: dotnet test Microsoft.Bot.Builder.sln --no-build --verbosity normal --collect:"XPlat Code Coverage"
+      run: dotnet test Tests/**/*Tests.csproj --no-build --verbosity normal --collect:"XPlat Code Coverage"
     - name: Install report generator
       run: dotnet tool install --global dotnet-reportgenerator-globaltool
     - name: Generate coverage report
