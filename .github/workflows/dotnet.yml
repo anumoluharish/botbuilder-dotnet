@@ -1,0 +1,34 @@
+name: .NET
+
+on:
+  push:
+    branches: [ main ]
+    path-ignore: ['abstractions/**', '**.md', '.vscode/**', '**.svg']
+  pull_request:
+    path-ignore: ['abstractions/**', '**.md', '.vscode/**', '**.svg']
+
+jobs:
+  build:
+
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 5.0.x
+    - name: Restore dependencies
+      run: dotnet restore Microsoft.Bot.Builder.sln
+    - name: Builx
+      run: dotnet build Microsoft.Bot.Builder.sln --no-restore
+    - name: Test
+      run: dotnet test Tests/**/*Tests.csproj --no-build --no-restore --filter "TestCategory!=IgnoreInAutomatedBuild&TestCategory!=FunctionalTests&TestCategory!=WindowsOnly" --collect:"Code Coverage" --settings CodeCoverage.runsettings
+    - name: Install report generator
+      run: dotnet tool install --global dotnet-reportgenerator-globaltool
+    - name: Generate coverage report
+      run: reportgenerator -reports:**/coveragexml -targetdir:./reports/coverage
+    - uses: actions/upload-artifact@v2
+      with:
+        name: coverage
+        path: reports/coverage
