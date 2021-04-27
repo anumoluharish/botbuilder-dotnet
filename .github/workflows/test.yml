@@ -1,0 +1,33 @@
+name: Code coverage
+on: 
+    push:
+        branches:
+            - main
+    pull_request:
+      types: [opened, synchronize, reopened]
+jobs:
+  build:
+ 
+    runs-on: windows-latest
+ 
+    steps:
+      - uses: actions/checkout@v1
+      - name: Setup .NET Core
+        uses: actions/setup-dotnet@v1
+        with:
+           dotnet-version: 3.1.100
+      - name: Generate coverage report
+      - uses: actions/checkout@v1
+      - name: Setup .NET Core
+        uses: actions/setup-dotnet@v1
+        with:
+           dotnet-version: 3.0.100
+      - name: Generate coverage report
+        run: |
+          cd ./tests
+          dotnet test --no-build --no-restore /p:CollectCoverage=true /p:CoverletOutput=TestResults/ /p:CoverletOutputFormat=lcov --collect:"Code Coverage" 
+      - name: Publish coverage report to coveralls.io
+        uses: coverallsapp/github-action@v1.0.1
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          path-to-lcov: .lcov.info
